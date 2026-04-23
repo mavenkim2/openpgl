@@ -8,6 +8,9 @@
 #ifdef OPENPGL_RADIANCE_CACHES
 #include "../directional/OutgoingRadianceHistogram.h"
 #endif
+#ifdef OPENPGL_NEURAL_RADIANCE_CACHE
+#include "../directional/neural/VarianceAccumulator.h"
+#endif
 #include "IRegion.h"
 
 namespace openpgl
@@ -24,6 +27,9 @@ struct Region : public IRegion
     bool splitFlag{false};
 #ifdef OPENPGL_RADIANCE_CACHES
     OutgoingRadianceHistogram outRadianceHist;
+#endif
+#ifdef OPENPGL_NEURAL_RADIANCE_CACHE
+    VarianceAccumulator varianceAccumulator;
 #endif
     // bool valid{true};
 
@@ -42,6 +48,9 @@ struct Region : public IRegion
     {
         return outRadianceHist.getOugoingRadiance(dir);
     }
+#endif
+
+#ifdef OPENPGL_NEURAL_RADIANCE_CACHE
 #endif
     /*
     TDistribution getDistribution(Point3 samplePosition, const bool &useParallaxComp) const

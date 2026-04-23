@@ -42,6 +42,34 @@ add_library(${PROJECT_NAME} SHARED
 target_compile_definitions(${PROJECT_NAME} PRIVATE BUILD_SHARED)
 endif()
 
+if(OPENPGL_NEURAL_RADIANCE_CACHE)
+add_library(openpgl_neural_radiance_cache_kernels OBJECT
+  directional/neural/NeuralRadianceCacheKernels.cu
+)
+set_target_properties(openpgl_neural_radiance_cache_kernels PROPERTIES
+  POSITION_INDEPENDENT_CODE ON
+  CUDA_ARCHITECTURES native
+  CUDA_STANDARD 17
+  CUDA_STANDARD_REQUIRED ON
+  CUDA_EXTENSIONS OFF
+)
+target_include_directories(openpgl_neural_radiance_cache_kernels PRIVATE
+  ${PROJECT_SOURCE_DIR}/third-party/tiny-cuda-nn/include
+  ${PROJECT_SOURCE_DIR}/third-party/tiny-cuda-nn/dependencies
+  ${PROJECT_SOURCE_DIR}/third-party/tiny-cuda-nn/dependencies/cutlass/include
+  ${PROJECT_SOURCE_DIR}/third-party/tiny-cuda-nn/dependencies/cutlass/tools/util/include
+)
+target_compile_definitions(openpgl_neural_radiance_cache_kernels PRIVATE
+  TCNN_MIN_GPU_ARCH=75
+  TCNN_HALF_PRECISION=1
+)
+target_sources(${PROJECT_NAME} PRIVATE
+  $<TARGET_OBJECTS:openpgl_neural_radiance_cache_kernels>
+)
+set_property(TARGET ${PROJECT_NAME} PROPERTY CUDA_ARCHITECTURES native)
+target_link_libraries(${PROJECT_NAME} PRIVATE CUDA::cudart)
+endif()
+
 if(OPENPGL_EF_RADIANCE_CACHES)
 target_compile_definitions(${PROJECT_NAME} PRIVATE OPENPGL_RADIANCE_CACHES)
 endif()
@@ -237,6 +265,10 @@ endif()
 
 if(OPENPGL_EF_IMAGE_SPACE_GUIDING_BUFFER)
   set(OPENPGL_IMAGE_SPACE_GUIDING_BUFFER ON)
+endif()
+
+if(OPENPGL_NEURAL_RADIANCE_CACHE)
+  set(OPENPGL_NEURAL_RADIANCE_CACHE ON)
 endif()
 
 configure_file(

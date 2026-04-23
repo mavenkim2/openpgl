@@ -5,3 +5,4 @@ install*
 doxygen
 .vscode
 doc/tmp/*
+third-party/*

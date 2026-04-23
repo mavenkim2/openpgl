@@ -38,7 +38,7 @@ struct PGLSampleData
     /// a scalar representation of the incident radiance divide by @ref pdf
     float weight;
 
-#ifdef OPENPGL_RADIANCE_CACHES
+#if defined(OPENPGL_RADIANCE_CACHES) || defined(OPENPGL_NEURAL_RADIANCE_CACHE)
     /// a scalar representation of the incident radiance in RGB NOT divide by @ref pdf
     /// but probably weighted with @ref radianceInMISWeight if the racince comes from a
     /// light source.
@@ -61,6 +61,12 @@ struct PGLSampleData
     pgl_direction directionOut;
     /// the outgoing, reflected/scattered radiance (i.e., incident radiance time BSDF/phase divided by pdf)
     pgl_spectrum radianceOut;
+#endif
+
+#ifdef OPENPGL_NEURAL_RADIANCE_CACHE
+    float risSampleCount;
+    float sourceFunction;
+    float risWeight;
 #endif
 };
 
@@ -130,6 +136,12 @@ struct PGLPathSegmentData
 
     /// The roughness of the material (e.g., GGX roughness on surfaces and mean cosine in volumes).
     float roughness{1.0f};
+
+#ifdef OPENPGL_NEURAL_RADIANCE_CACHE
+    float risSampleCount;
+    float sourceFunction;
+    float risWeight;
+#endif
 
     /// The pointer to the Region (DEPRECATED)
     const void *regionPtr{nullptr};

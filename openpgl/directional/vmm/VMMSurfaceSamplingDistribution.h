@@ -6,6 +6,9 @@
 #include <array>
 
 #include "../ISurfaceSamplingDistribution.h"
+#ifdef OPENPGL_NEURAL_RADIANCE_CACHE
+#include "../neural/NeuralRadianceCache.h"
+#endif
 
 namespace openpgl
 {
@@ -22,6 +25,9 @@ struct __aligned(TVMMDistribution::VectorSize * 4) VMMSurfaceSamplingDistributio
 
     /// the region's Li distribution with applied parallax-compensation
     TVMMDistribution m_liDistribution;
+#ifdef OPENPGL_NEURAL_RADIANCE_CACHE
+    NeuralRadianceCache *m_neuralRadianceCache;
+#endif
 
     /// product guiding distribution (may be invalid)
     std::array<TVMMDistribution, MaxNumProductDistributions::value> m_distributions;
@@ -110,6 +116,11 @@ struct __aligned(TVMMDistribution::VectorSize * 4) VMMSurfaceSamplingDistributio
     inline Vector3 irradiance(const Vector3 normal, const bool directLightMIS) const override
     {
         return m_liDistribution.irradiance(normal, directLightMIS);
+    }
+#elif defined(OPENPGL_NEURAL_RADIANCE_CACHE)
+    inline Vector3 incomingRadiance(const Vector3 dir) const override
+    {
+        return m_neuralRadianceCache.incomingRadiance(dir);
     }
 #endif
 

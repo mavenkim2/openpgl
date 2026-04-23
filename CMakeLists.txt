@@ -53,6 +53,7 @@ try_compile(COMPILER_SUPPORTS_ARM_NEON "${CMAKE_BINARY_DIR}" "${PROJECT_SOURCE_D
 
 OPTION(OPENPGL_EF_RADIANCE_CACHES "Enables experimental feature (ir)radiance caches." OFF)
 OPTION(OPENPGL_EF_IMAGE_SPACE_GUIDING_BUFFER "Enables experimental feature ImageSpaceGuidignBuffer." OFF)
+OPTION(OPENPGL_EF_NEURAL_RADIANCE_CACHE "Enables experimental feature neural radiance cache." OFF)
 
 OPTION(OPENPGL_DIRECTION_COMPRESSION "Using 32-Bit compression to represent directions." OFF)
 OPTION(OPENPGL_RADIANCE_COMPRESSION "Using RGBE 32-Bit compression to represent radiance data (linear RGB)." OFF)
@@ -90,6 +91,21 @@ FIND_PACKAGE(TBB REQUIRED ${OPENPGL_TBB_COMPONENT})
 if (OPENPGL_EF_IMAGE_SPACE_GUIDING_BUFFER)
   FIND_PACKAGE(OpenImageDenoise 2.2.0 REQUIRED)
   #FIND_PACKAGE(ZLIB REQUIRED)
+endif()
+
+set(OPENPGL_NEURAL_RADIANCE_CACHE OFF)
+if (OPENPGL_EF_NEURAL_RADIANCE_CACHE)
+  find_package(CUDAToolkit QUIET)
+  if (CUDAToolkit_FOUND)
+    enable_language(CUDA)
+    set(CMAKE_CUDA_STANDARD 17)
+    set(CMAKE_CUDA_STANDARD_REQUIRED ON)
+    set(CMAKE_CUDA_EXTENSIONS OFF)
+    set(OPENPGL_NEURAL_RADIANCE_CACHE ON)
+    message(STATUS "CUDA toolkit found. Enabling neural radiance cache support.")
+  else()
+    message(STATUS "CUDA toolkit not found. Neural radiance cache support will remain disabled.")
+  endif()
 endif()
 
 ## Global compiler setup

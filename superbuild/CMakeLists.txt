@@ -73,6 +73,7 @@ option(BUILD_TBB_SHARED "Build Intel Threading Building Blocks as shared library
 option(BUILD_OIDN "Build OpenImageDenoise as a part of the superbuild." ON)
 option(BUILD_OIDN_FROM_SOURCE "Build OpenImageDenoise or use pre-built version?" ON)
 option(DOWNLOAD_ISPC "Download ISPC or use the one found in the system environment?" ON)
+option(OPENPGL_EF_NEURAL_RADIANCE_CACHE "Enable the experimental neural radiance cache feature." OFF)
 
 ## ======================================================================== ##
 ## Build dependencies.
@@ -202,6 +203,12 @@ if (NOT BUILD_DEPENDENCIES_ONLY)
     )
   endif()
 
+  if(OPENPGL_EF_NEURAL_RADIANCE_CACHE)
+    set(OPENPGL_ARGS ${OPENPGL_ARGS}
+      -DOPENPGL_EF_NEURAL_RADIANCE_CACHE=${OPENPGL_EF_NEURAL_RADIANCE_CACHE}
+    )
+  endif()
+
   if(OPENPGL_DIRECTION_COMPRESSION)
     set(OPENPGL_ARGS ${OPENPGL_ARGS}
       -DOPENPGL_DIRECTION_COMPRESSION=${OPENPGL_DIRECTION_COMPRESSION}
@@ -235,6 +242,12 @@ endif()
 if(OPENPGL_EF_IMAGE_SPACE_GUIDING_BUFFER)
   set(OPENPGL_ARGS ${OPENPGL_ARGS}
     -DOPENPGL_EF_IMAGE_SPACE_GUIDING_BUFFER=ON
+  )
+endif()
+
+if(OPENPGL_EF_NEURAL_RADIANCE_CACHE)
+  set(OPENPGL_ARGS ${OPENPGL_ARGS}
+    -DOPENPGL_EF_NEURAL_RADIANCE_CACHE=ON
   )
 endif()
 

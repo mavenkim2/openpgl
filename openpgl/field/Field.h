@@ -19,6 +19,10 @@
 #endif
 #define USE_PRECOMPUTED_NN 1
 
+#ifdef OPENPGL_NEURAL_RADIANCE_CACHE
+#include "../directional/neural/NeuralRadianceCache.h"
+#endif
+
 namespace openpgl
 {
 
@@ -219,6 +223,10 @@ struct Field
                     samples_[i] = samples.samples[i];
             });
 
+#ifdef OPENPGL_NEURAL_RADIANCE_CACHE
+            m_neuralRadianceCache.addSamples(samples_);
+#endif
+
             if (zeroValueSamples_.capacity() < samples.zeroValueSamples.size())
             {
                 zeroValueSamples_.reserve(2 * samples.zeroValueSamples.size());
@@ -354,6 +362,30 @@ struct Field
         return m_initialized;
     }
 
+    bool startNeuralRadianceCacheTrainingAsync(uint32_t maxEpochs)
+    {
+#ifdef OPENPGL_NEURAL_RADIANCE_CACHE
+        return m_neuralRadianceCache.startTrainingAsync(maxEpochs);
+#else
+        return false;
+#endif
+    }
+
+    void requestStopNeuralRadianceCacheTraining()
+    {
+#ifdef OPENPGL_NEURAL_RADIANCE_CACHE
+        m_neuralRadianceCache.requestStopTraining();
+#endif
+    }
+
+    void waitForNeuralRadianceCacheTraining()
+    {
+#ifdef OPENPGL_NEURAL_RADIANCE_CACHE
+        m_neuralRadianceCache.waitForTraining();
+#endif
+    }
+
+
    private:
     void estimateSceneBounds(const SampleContainerInternal &samples)
     {
@@ -462,6 +494,9 @@ struct Field
                                                                    zeroValueSamples.data() + regionStorage.second.m_is_begin,
                                                                    regionStorage.second.m_is_end - regionStorage.second.m_is_begin);
 #endif
+#ifdef OPENPGL_NEURAL_RADIANCE_CACHE
+                        regionStorage.first.varianceAccumulator.accumulateSamples(samples.data() + regionStorage.second.m_begin, regionStorage.second.m_end - regionStorage.second.m_begin);
+#endif
                         // TODO: we should move setting the pivot to the factory
                         regionStorage.first.distribution._pivotPosition = sampleMean;
                         regionStorage.first.valid = regionStorage.first.distribution.isValid();
@@ -510,6 +545,9 @@ struct Field
 #ifdef OPENPGL_RADIANCE_CACHES
                     regionStorage.first.outRadianceHist.decay(this->m_decayOnSpatialSplit);
 #endif
+#ifdef OPENPGL_NEURAL_RADIANCE_CACHE
+                    regionStorage.first.varianceAccumulator.decay(this->m_decayOnSpatialSplit);
+#endif
                     regionStorage.first.splitFlag = false;
                 }
 
@@ -557,6 +595,9 @@ struct Field
                         regionStorage.first.outRadianceHist.update(samples.data() + regionStorage.second.m_begin, regionStorage.second.m_end - regionStorage.second.m_begin,
                                                                    zeroValueSamples.data() + regionStorage.second.m_is_begin,
                                                                    regionStorage.second.m_is_end - regionStorage.second.m_is_begin);
+#endif
+#ifdef OPENPGL_NEURAL_RADIANCE_CACHE
+                        regionStorage.first.varianceAccumulator.accumulateSamples(samples.data() + regionStorage.second.m_begin, regionStorage.second.m_end - regionStorage.second.m_begin);
 #endif
                         regionStorage.first.valid = regionStorage.first.isValid();
 #ifdef OPENPGL_DEBUG_MODE
@@ -761,6 +802,10 @@ struct Field
     float m_timeLastUpdateCopySamples{0.f};
     float m_timeLastUpdateSpatialStructureUpdate{0.f};
     float m_timeLastUpdateDirectionalDistriubtionUpdate{0.f};
+
+#ifdef OPENPGL_NEURAL_RADIANCE_CACHE
+    NeuralRadianceCache m_neuralRadianceCache;
+#endif
 };
 
 }  // namespace openpgl
